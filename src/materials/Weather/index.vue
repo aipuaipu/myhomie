@@ -35,12 +35,17 @@
 <script lang="ts">
 import { defineComponent, computed, ref, watch, onUnmounted } from 'vue'
 import { mapPosition } from '@/plugins/position-selector'
-import { getWeatherIconURL, weatherFormatter } from './icon-map'
+import { getWeatherIconURL, weatherFormatter, wmoToChinese } from './icon-map'
 import { clampDisplayFontSize } from '@/utils'
 import defaultIcon from '@/assets/imgs/weather-static-icon/not-available.svg'
 import { ElNotification } from 'element-plus';
 import { useI18n } from 'vue-i18n'
-import request from '@/utils/request'
+
+// --- 免费 API（无需 key，CORS 友好） ---
+const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search'
+const WEATHER_API = 'https://api.open-meteo.com/v1/forecast'
+const IP_GEO_API = 'https://ipinfo.io/json'
+
 export default defineComponent({
   name: 'Weather',
   props: {
@@ -52,7 +57,8 @@ export default defineComponent({
   setup(props) {
     const positionCSS = computed(() => mapPosition(props.componentSetting.position))
     const cityName = ref('')
-    const adcode = ref('')
+    const lat = ref(0)
+    const lon = ref(0)
 
     const { t } = useI18n()
 
@@ -62,12 +68,15 @@ export default defineComponent({
 
     const getWeather = async () => {
       try {
-        const { status, lives } = await request({ url: `/tapi/amap/v3/weather/weatherInfo?extensions=base&city=${adcode.value}` })
-        if (status === '1') {
-          const { weather, temperature: _temperature } = lives[0]
-          weatherIcon.value = getWeatherIconURL(weather, props.componentSetting.animationIcon)
-          weatherText.value = weatherFormatter(weather)
-          temperature.value = _temperature
+        const url = `${WEATHER_API}?latitude=${lat.value}&longitude=${lon.value}&current_weather=true`
+        const res = await fetch(url)
+        const data = await res.json()
+        if (data.current_weather) {
+          const { weathercode, temperature: _temperature } = data.current_weather
+          const cnWeather = wmoToChinese(weathercode)
+          weatherIcon.value = getWeatherIconURL(cnWeather, props.componentSetting.animationIcon)
+          weatherText.value = weatherFormatter(cnWeather)
+          temperature.value = String(Math.round(_temperature))
         } else {
           throw new Error('API error')
         }
@@ -83,23 +92,29 @@ export default defineComponent({
     ], async () => {
       try {
         if (props.componentSetting.weatherMode === 1) {
-          const { code, data } = await request({ url: `/tapi/ipInfo` })
-          if (code === 0 && data) {
-            cityName.value = data.city.replace(/[市城区]/g, '')
-            adcode.value = data.city_id
+          // 自动模式：通过 IP 获取位置
+          const res = await fetch(IP_GEO_API)
+          const data = await res.json()
+          if (data.latitude && data.longitude) {
+            lat.value = data.latitude
+            lon.value = data.longitude
+            cityName.value = (data.city || '').replace(/[市城区]/g, '')
           } else {
-            throw new Error('API error')
+            throw new Error('IP geolocation failed')
           }
         } else {
+          // 手动模式：通过城市名搜索坐标
           if (!props.componentSetting.cityName) return
-          const { status, districts } = await request({ url: `/tapi/amap/v3/config/district?keywords=${props.componentSetting.cityName}&subdistrict=0` })
-          if (status === '1' && districts.length > 0) {
-            const cityInfo = districts.find((item:any) => item.level === 'city')
-            const { adcode: _adcode, name } = cityInfo
-            cityName.value = name.replace(/[市城区]/g, '')
-            adcode.value = _adcode
+          const searchUrl = `${GEOCODING_API}?name=${encodeURIComponent(props.componentSetting.cityName)}&count=1&language=zh`
+          const res = await fetch(searchUrl)
+          const data = await res.json()
+          if (data.results && data.results.length > 0) {
+            const { latitude, longitude, name } = data.results[0]
+            lat.value = latitude
+            lon.value = longitude
+            cityName.value = (name || props.componentSetting.cityName).replace(/[市城区]/g, '')
           } else {
-            throw new Error('API error')
+            throw new Error('City not found')
           }
         }
       } catch {
@@ -130,7 +145,6 @@ export default defineComponent({
     return {
       positionCSS,
       cityName,
-      adcode,
       weatherIcon,
       weatherText,
       temperature
