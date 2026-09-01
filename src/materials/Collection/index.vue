@@ -74,8 +74,8 @@
     </div>
     <easy-dialog
       v-model="dialogVisible"
-      width="400px"
-      height="400px"
+      width="min(400px, 96vw)"
+      height="min(400px, 80vh)"
       close-on-click-outside
       @close="handleDialogClose"
     >
@@ -436,7 +436,6 @@ const showIconPicker = async () => {
   overflow: hidden;
   position: relative;
   max-width: 1080px;
-  min-width: 720px;
   .keys-wrapper {
     box-sizing: border-box;
     padding: 8px;

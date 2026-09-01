@@ -33,7 +33,7 @@ export default {
         type: 'input-number',
         attrs: {
           'controls-position': 'right',
-          min: 720,
+          min: 240,
           max: 1280,
           style: 'width: 100px'
         },

@@ -2,7 +2,7 @@
   <div
     class="wrapper material-day"
     :style="{
-      fontSize: componentSetting.textFontSize + 'px',
+      fontSize: clampDisplayFontSize(componentSetting.textFontSize, 24),
       color: componentSetting.textColor,
       textShadow: componentSetting.textShadow,
       padding: componentSetting.padding + 'px',
@@ -27,6 +27,7 @@
 <script lang="ts">
 import { defineComponent, onUnmounted, ref, computed, watch, onMounted } from 'vue'
 import { mapPosition } from '@/plugins/position-selector'
+import { clampDisplayFontSize } from '@/utils'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import tz from 'dayjs/plugin/timezone'

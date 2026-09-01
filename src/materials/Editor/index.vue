@@ -64,7 +64,7 @@
       >
         Milkdown Editor
       </div>
-      <div class="menu-btn">
+      <div class="menu-btn" :class="{ open: menuVisible }" @click.stop="menuVisible = !menuVisible">
         <Icon name="menu" fill="#434C5E" :width="componentSetting.textFontSize * 1.2" :height="componentSetting.textFontSize * 1.2" />
         <div class="menu-dropdown">
           <div class="menu-dropdown-item" @click="onImportMarkdown">
@@ -98,7 +98,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed, toRaw } from 'vue'
+import { ref, watch, computed, toRaw, onMounted, onUnmounted } from 'vue'
 import { useStore } from '@/store'
 import { useI18n } from 'vue-i18n'
 import Milk from './milkdown/Milk.vue'
@@ -125,6 +125,14 @@ const isLock = computed(() => store.isLock)
 
 const milkdown = ref()
 const inputFileEl = ref()
+
+// 菜单点击/触摸切换（触摸设备无hover）；点击空白处关闭
+const menuVisible = ref(false)
+const onDocClickCloseMenu = () => {
+  menuVisible.value = false
+}
+onMounted(() => document.addEventListener('click', onDocClickCloseMenu))
+onUnmounted(() => document.removeEventListener('click', onDocClickCloseMenu))
 
 // 如果使用数组监听会触发新旧值一样的回调，因为对象内存已改变
 watch(
@@ -222,7 +230,8 @@ const onExportMarkdown = () => {
     border-radius: 4px;
     cursor: pointer;
     position: relative;
-    &:hover {
+    &:hover,
+    &.open {
       background: rgba(0,0,0,0.04);
       .menu-dropdown {
         display: block;

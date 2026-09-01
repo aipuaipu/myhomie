@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import VueGridLayout from 'vue-grid-layout'
 import { i18n } from '@/lang'
 import App from './App.vue'
 import store from './store'
@@ -28,6 +27,7 @@ import {
 import EasyDialog from '@/components/Global/EasyDialog.vue'
 import Icon from '@/components/Tools/Icon.vue'
 import { setPreviewModeData } from '@/utils/preview-mode'
+import { isTouchDevice } from '@/utils'
 
 if (import.meta.env.PROD) {
   // 强制重定向到https
@@ -99,7 +99,6 @@ const init = async () => {
   components.map(component => {
     app.use(component)
   })
-  app.use(VueGridLayout)
   app.component('EasyDialog', EasyDialog)
   app.component('Icon', Icon)
   const globalLoading = document.querySelector('#globalLoading')
@@ -114,8 +113,8 @@ init()
 // document.documentElement.style.setProperty('--el-border-radius-base', '8px')
 // document.documentElement.style.setProperty('--el-border-radius-small', '4px')
 
-// 移动端禁用右键菜单与任何长按选中
-if ('ontouchstart' in window) {
+// 纯触摸设备禁用右键菜单与任何长按选中（触屏笔记本保留右键）
+if (isTouchDevice()) {
   document.documentElement.style.setProperty('--user-select', 'none')
   document.addEventListener('contextmenu', (e) => e.preventDefault())
 }

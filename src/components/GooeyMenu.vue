@@ -7,12 +7,12 @@
       <span class="hamburger hamburger-2" />
       <span class="hamburger hamburger-3" />
     </label>
-    <el-tooltip effect="dark" :content="$t('辅助功能') + `(Alt+X)`" placement="top">
+    <el-tooltip effect="dark" :content="menuTip('辅助功能', 'Alt+X')" placement="top" :disabled="isTouch">
       <div class="menu-item" @click="handleShowAuxiliaryConfig">
         <Icon name="tools" />
       </div>
     </el-tooltip>
-    <el-tooltip effect="dark" :content="(isLock ? $t('解锁') : $t('锁定')) + `(Alt+E)`" placement="top">
+    <el-tooltip effect="dark" :content="menuTip(isLock ? $t('解锁') : $t('锁定'), 'Alt+E')" placement="top" :disabled="isTouch">
       <div
         class="menu-item"
         :title="$t('editStatueWarningText')"
@@ -21,12 +21,12 @@
         <Icon :name="!isLock ? 'unlock' : 'lock'" />
       </div>
     </el-tooltip>
-    <el-tooltip effect="dark" :content="$t('全局设置') + `(Alt+W)`" placement="top">
+    <el-tooltip effect="dark" :content="menuTip($t('全局设置'), 'Alt+W')" placement="top" :disabled="isTouch">
       <div class="menu-item" @click="handleShowGlobalConfig">
         <Icon name="setting-4" />
       </div>
     </el-tooltip>
-    <el-tooltip effect="dark" :content="$t('添加组件') + `(Alt+Q)`" placement="top">
+    <el-tooltip effect="dark" :content="menuTip($t('添加组件'), 'Alt+Q')" placement="top" :disabled="isTouch">
       <div class="menu-item" @click="handleAddComponent">
         <Icon name="add" />
       </div>
@@ -72,6 +72,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, onUnmounted } from 'vue'
 import { useStore } from '@/store'
+import { isTouchDevice } from '@/utils'
 export default defineComponent({
   name: 'GooetMenu',
   emits: ['addComponent', 'showGlobalConfig', 'showAuxiliaryConfig'],
@@ -79,6 +80,9 @@ export default defineComponent({
     const store = useStore()
     const isLock = computed(() => store.isLock)
     const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
+    // 触摸设备无键盘，tooltip禁用且不展示快捷键
+    const isTouch = isTouchDevice()
+    const menuTip = (label: string, shortcut: string) => isTouch ? label : `${label}(${shortcut})`
 
     const keyDownEvent = async (e: KeyboardEvent) => {
       if (!isLock.value && (e.key === 'Enter' || e.key === 'Escape')) {
@@ -127,6 +131,8 @@ export default defineComponent({
     return {
       isLock,
       isSafari,
+      isTouch,
+      menuTip,
       handleAddComponent() {
         emit('addComponent')
       },
@@ -211,8 +217,8 @@ $hamburger-spacing: 6px;
   // $width:300px;
   $height: 48px;
   position: fixed;
-  right: 3vw;
-  bottom: 5vh;
+  right: calc(3vw + env(safe-area-inset-right, 0px));
+  bottom: calc(5vh + env(safe-area-inset-bottom, 0px));
   // width:$width;
   height: $height;
   box-sizing: border-box;

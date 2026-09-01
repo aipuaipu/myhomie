@@ -2,7 +2,7 @@
   <div
     class="wrapper material-clock"
     :style="{
-      fontSize: componentSetting.textFontSize + 'px',
+      fontSize: clampDisplayFontSize(componentSetting.textFontSize, 26),
       color: componentSetting.textColor,
       textShadow: componentSetting.textShadow,
       padding: componentSetting.padding + 'px',
@@ -18,6 +18,7 @@
 <script lang="ts">
 import { defineComponent, onUnmounted, ref, computed, watch } from 'vue'
 import { mapPosition } from '@/plugins/position-selector'
+import { clampDisplayFontSize } from '@/utils'
 export default defineComponent({
   name: 'Clock',
   props: {

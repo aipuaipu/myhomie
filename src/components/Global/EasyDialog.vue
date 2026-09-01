@@ -164,8 +164,12 @@ const open = async (needEmit = false) => {
     const { width, height } = (staticRect.value as HTMLElement).getBoundingClientRect()
     const fromX = (isClicked.value && mousePosition.value.x) || window.innerWidth / 2
     const fromY = (isClicked.value && mousePosition.value.y) || window.innerHeight / 2
-    const endX = window.innerWidth / 2 - width / 2
-    const endY = window.innerHeight / 2 - height / 2
+    // 居中位置钳制到视口内；弹窗比视口还宽时对称居中，小屏下固定px宽度的弹窗不至于单侧出屏
+    const margin = 8
+    const clampCenter = (center: number, size: number, viewport: number) =>
+      size >= viewport - margin * 2 ? (viewport - size) / 2 : Math.max(Math.min(center, viewport - size - margin), margin)
+    const endX = clampCenter(window.innerWidth / 2 - width / 2, width, window.innerWidth)
+    const endY = clampCenter(window.innerHeight / 2 - height / 2, height, window.innerHeight)
     rectInfo.value = {
       width,
       height,
@@ -264,7 +268,16 @@ const close = (needEmit = false) => {
       }
     }
   }
-  .easy-dialog-body {
+  /* 小屏下贴边弹窗的外挂关闭按钮会出屏，改为内嵌显示 */
+  @media screen and (max-width: 768px) {
+    .easy-dialog-close.outside-close {
+      top: 4px;
+      right: 4px;
+      color: #b6b7b9;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: var(--el-border-radius-small);
+    }
+  }  .easy-dialog-body {
     height: 100%;
     flex: 1;
     overflow-y: auto;

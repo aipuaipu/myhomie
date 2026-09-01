@@ -360,6 +360,13 @@ export default defineComponent({
           animation: closeFadeIn 0.4s forwards;
         }
       }
+      /* 触摸设备无hover，删除按钮常显，否则无法删除待办 */
+      @media (hover: none) {
+        .close {
+          opacity: 1;
+          visibility: visible;
+        }
+      }
       .checkmark {
         position: absolute;
         stroke: var(--themeLightColor);

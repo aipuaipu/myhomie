@@ -25,7 +25,7 @@ export default defineConfig({
       'vue-i18n',
       'pinia',
       'pinia-plugin-persistedstate',
-      'vue-grid-layout',
+      'grid-layout-plus',
       'element-plus',
       'vuedraggable',
       '@howdyjs/to-control',

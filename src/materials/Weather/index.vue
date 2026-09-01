@@ -2,7 +2,7 @@
   <div
     class="wrapper material-weather"
     :style="{
-      fontSize: componentSetting.baseFontSize + 'px',
+      fontSize: clampDisplayFontSize(componentSetting.baseFontSize, 14),
       color: componentSetting.textColor,
       textShadow: componentSetting.textShadow,
       padding: componentSetting.padding + 'px',
@@ -36,6 +36,7 @@
 import { defineComponent, computed, ref, watch, onUnmounted } from 'vue'
 import { mapPosition } from '@/plugins/position-selector'
 import { getWeatherIconURL, weatherFormatter } from './icon-map'
+import { clampDisplayFontSize } from '@/utils'
 import defaultIcon from '@/assets/imgs/weather-static-icon/not-available.svg'
 import { ElNotification } from 'element-plus';
 import { useI18n } from 'vue-i18n'
@@ -146,6 +147,8 @@ export default defineComponent({
 }
 .weather-box {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   .weather-icon-wrapper {
     display: flex;
     align-items: center;
@@ -160,12 +163,18 @@ export default defineComponent({
     align-items: center;
     padding: 0.4em;
     justify-content: space-around;
+    min-width: 0;
+    max-width: 100%;
     .temperature {
       font-size: 2.8em;
     }
     .city {
       font-size: 0.8em;
       padding-right: 0.8em;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { createPinia, defineStore } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { getSupportFontFamilyList } from '@/utils/font'
+import { isTouchDevice } from '@/utils'
 
 export default createPinia().use(piniaPluginPersistedstate)
 
@@ -36,7 +37,7 @@ export const useStore = defineStore({
   id: 'config',
   state: () => {
     return {
-      isMobile: 'ontouchstart' in window,
+      isMobile: isTouchDevice(),
       hiddenWarnLockTips: false,
       isLock: true,
       list: [] as ComponentOptions[],

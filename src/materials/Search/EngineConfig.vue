@@ -415,6 +415,12 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+/* 嵌在配置弹窗表单里时用负边距对齐label；小屏弹窗已贴近全宽，负边距会把内容推出左缘 */
+.engine-config {
+  @media screen and (max-width: 768px) {
+    margin-left: 0 !important;
+  }
+}
 .warning {
   padding: 5px 10px;
   font-size: 12px;

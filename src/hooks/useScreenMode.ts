@@ -22,9 +22,9 @@ export default function () {
       setValue()
     }, 200)
   }
-  // setValue()
   onMounted(() => window.addEventListener('resize', onWindowSizeChange))
   onUnmounted(() => window.removeEventListener('resize', onWindowSizeChange))
-  onWindowSizeChange()
+  // 初始同步测量一次，避免首帧 windowWidth=0 导致依赖视口宽度的布局延迟渲染
+  setValue()
   return { windowWidth, windowHeight, screenMode, fr }
 }

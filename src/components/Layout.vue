@@ -1,12 +1,12 @@
 <template>
-  <div v-if="windowWidth > 0" class="grid-wrapper" :style="`width: ${windowWidth}px;`">
+  <div v-if="windowWidth > 0" class="grid-wrapper" :style="gridWrapperStyle">
     <grid-layout
       v-model:layout="list"
       :col-num="12"
       :row-height="rowHeight"
       :margin="[global.gutter, global.gutter]"
-      :is-draggable="!isLock"
-      :is-resizable="!isLock"
+      :is-draggable="!isLock && !isMobileView"
+      :is-resizable="!isLock && !isMobileView"
       :use-css-transforms="false"
       @layout-updated="handleLayoutListUpdated"
     >
@@ -15,9 +15,9 @@
         :id="item.customId || undefined"
         :key="item.i"
         :class="[`grid-item-${item.material}`]"
-        :x="item.x"
-        :y="item.y"
-        :w="item.w"
+        :x="gridItemCoords(item).x"
+        :y="gridItemCoords(item).y"
+        :w="gridItemCoords(item).w"
         :h="item.h"
         :i="item.i"
         :style="{ 'z-index': item.zIndex || 1 }"
@@ -62,7 +62,7 @@
       v-to-control="{
         positionMode: element.affixInfo ? element.affixInfo.mode : 1,
         moveCursor: false,
-        disabled: () => isLock,
+        disabled: () => isLock || isMobileView,
         arrowOptions: {
           lineColor: '#9a98c3',
           size: 12,
@@ -75,7 +75,9 @@
         width: `${element.w}px`,
         height: `${element.h}px`,
         zIndex: element.zIndex || 2,
-        ...(element.affixInfo ? computedPosition(element.affixInfo) : {})
+        transform: computedAffixTransform(element),
+        transformOrigin: computedAffixOrigin(element),
+        ...(element.affixInfo ? computedPosition(element, element.affixInfo) : {})
       }"
       @todragend="handleAffixDragend($event, element)"
       @tocontrolend="handleAffixDragend($event, element)"
@@ -155,6 +157,7 @@ import {
   watchEffect,
   h
 } from 'vue'
+import { GridLayout, GridItem } from 'grid-layout-plus'
 import { useStore } from '@/store'
 import { ToControlDirective } from '@howdyjs/to-control'
 import MouseMenuDirective from '@/plugins/mouse-menu'
@@ -167,6 +170,8 @@ import { uid } from '@/utils'
 export default defineComponent({
   name: 'Layout',
   components: {
+    GridLayout,
+    GridItem,
     ActionConfig: defineAsyncComponent(() => import('@/components/ActionConfig.vue')),
     ActionPopover: defineAsyncComponent(() => import('@/components/Action/ActionPopover.vue')),
     Confirm: defineAsyncComponent(() => import('@/components/Tools/Confirm.vue')),
@@ -204,7 +209,7 @@ export default defineComponent({
   },
   emits: ['edit'],
   setup(props, { emit }) {
-    const { windowWidth, windowHeight } = useScreenMode()
+    const { windowWidth, windowHeight, screenMode } = useScreenMode()
     const { t } = useI18n()
 
     const actionConfig = ref()
@@ -215,9 +220,44 @@ export default defineComponent({
     const isLock = computed(() => store.isLock)
     const global = computed(() => store.global)
 
+    // 小屏视口(≤721px)切换为移动端布局：组件坐标按单列流式换算，仅保留查看与交互能力，
+    // 编辑(拖拽/缩放/移动Fixed组件)仍在桌面端进行，避免破坏为桌面排版的坐标数据。
+    // grid-layout的layout数组保持store原引用(桌面端可直接写回)，换算只发生在GridItem坐标props上
+    const isMobileView = computed(() => screenMode.value === 0)
+
     const list = ref<any[]>([])
     watchEffect(() => {
       list.value = store.list
+    })
+
+    // 移动端按桌面排版(x,y)的阅读顺序纵向堆叠：i -> 换算后的y行号
+    const mobileFlowYMap = computed(() => {
+      const map: Record<string, number> = {}
+      if (!isMobileView.value) return map
+      let cursor = 0
+      const sorted = [...store.list].sort((a, b) => (a.y - b.y) || (a.x - b.x))
+      for (const it of sorted) {
+        map[it.i] = cursor
+        cursor += it.h || 1
+      }
+      return map
+    })
+    const gridItemCoords = (item: ComponentOptions) => {
+      if (!isMobileView.value) return item
+      return {
+        x: 0,
+        y: mobileFlowYMap.value[item.i] ?? item.y,
+        w: 12
+      }
+    }
+    // 移动端单列堆叠的总高度大于grid-layout按原始坐标计算的容器高度，用wrapper撑起
+    const gridWrapperStyle = computed(() => {
+      if (!isMobileView.value) return `width: ${windowWidth.value}px;`
+      let bottom = 0
+      if (store.list.length) {
+        bottom = Math.max(...store.list.map(it => (mobileFlowYMap.value[it.i] ?? it.y) + (it.h || 1)))
+      }
+      return `width: ${windowWidth.value}px; height: ${bottom * (rowHeight.value + global.value.gutter) + global.value.gutter}px;`
     })
 
     const actionElement = computed(() => store.actionElement)
@@ -322,7 +362,25 @@ export default defineComponent({
     ])
 
     const affix = computed(() => store.affix)
-    const computedPosition = ({ mode, x, y }: AffixInfo) => {
+    // Fixed组件在移动端整体等比缩放并钳制到视口内，桌面端保持原坐标不变；
+    // 视口宽度未测量完成时不做缩放，避免除以0产生负缩放
+    const affixScale = (element: ComponentOptions) => {
+      if (!isMobileView.value || windowWidth.value <= 0) return 1
+      return Math.min(1, (windowWidth.value - 16) / (element.w || 1))
+    }
+    const computedAffixTransform = (element: ComponentOptions) => {
+      const scale = affixScale(element)
+      return scale >= 1 ? 'none' : `scale(${scale})`
+    }
+    const computedAffixOrigin = (element: ComponentOptions) => {
+      if (!element.affixInfo) return 'center'
+      const mode = element.affixInfo.mode || 1
+      // 从锚定角向内缩放，保证钳制后的边缘不会再次出屏
+      const originX = [1, 3].includes(mode) ? 'left' : 'right'
+      const originY = [1, 2].includes(mode) ? 'top' : 'bottom'
+      return `${originX} ${originY}`
+    }
+    const computedPosition = (element: ComponentOptions, { mode, x, y }: AffixInfo) => {
       const result = {
         top: 'auto',
         left: 'auto',
@@ -335,11 +393,17 @@ export default defineComponent({
         result.bottom = y + 'px'
       }
       if ([1, 3].includes(mode)) {
-        result.left = x + 'px'
+        result.left = clampAffixX(x, element) + 'px'
       } else {
-        result.right = x + 'px'
+        result.right = clampAffixX(x, element) + 'px'
       }
       return result
+    }
+    // 移动端把超出视口的横向坐标钳回屏内，避免PC上摆在右侧的Fixed组件出屏
+    const clampAffixX = (x: number, element: ComponentOptions) => {
+      if (!isMobileView.value) return x
+      const max = windowWidth.value - (element.w || 0) * affixScale(element) - 8
+      return Math.max(Math.min(x, Math.max(8, max)), 8)
     }
 
     const handleAffixDragend = ($event: any, element: ComponentOptions) => {
@@ -377,6 +441,8 @@ export default defineComponent({
     })
 
     const handleLayoutListUpdated = (e: any) => {
+      // 移动端单列重排是派生布局，不回写store，避免污染桌面端排版数据
+      if (isMobileView.value) return
       store.updateList(e)
     }
 
@@ -389,7 +455,10 @@ export default defineComponent({
       windowWidth,
       rowHeight,
       list,
+      gridItemCoords,
+      gridWrapperStyle,
       isLock,
+      isMobileView,
       global,
       menuList,
       actionConfig,
@@ -400,6 +469,8 @@ export default defineComponent({
       affix,
       isToControlFinishedInit,
       computedPosition,
+      computedAffixTransform,
+      computedAffixOrigin,
       handleAffixDragend,
       handleComponentClick,
       handleLayoutListUpdated,
@@ -482,10 +553,11 @@ export default defineComponent({
 }
 </style>
 <style>
-.vue-grid-item > .vue-resizable-handle {
+/* grid-layout-plus 的缩放手柄：沿用原尺寸与图标样式 */
+.vgl-item__resizer {
   width: 24px !important;
   height: 24px !important;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjMxNjA4MTYyMzEwIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjMzNjExIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT48L2RlZnM+PHBhdGggZD0iTTI4Ni4xNjUzMzMgNjcwLjE2NTMzM2E0Mi42NjY2NjcgNDIuNjY2NjY3IDAgMSAxLTYwLjMzMDY2Ni02MC4zMzA2NjZsMjU2LTI1NmE0Mi42NjY2NjcgNDIuNjY2NjY3IDAgMCAxIDU5LjAwOC0xLjI4bDI1NiAyMzQuNjY2NjY2YTQyLjY2NjY2NyA0Mi42NjY2NjcgMCAxIDEtNTcuNjg1MzM0IDYyLjg5MDY2N2wtMjI1Ljg3NzMzMy0yMDcuMDYxMzMzLTIyNy4xMTQ2NjcgMjI3LjExNDY2NnoiIGZpbGw9IiM5YTk4YzMiIHAtaWQ9IjMzNjEyIj48L3BhdGg+PC9zdmc+')
+  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnLzIwMDAvU1ZHIj48c3ZnIHQ9IjE2MzE2MDgxNjIzMTAiIGNsYXNzPSJpY29uIiB2aWV3Qm94PSIwIDAgMTAyNCAxMDI0IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcC1pZD0iMzM2MTEiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PHN0eWxlIHR5cGU9InRleHQvY3NzIj48L3N0eWxlPjwvZGVmcz48cGF0aCBkPSJNMjg2LjE2NTMzMyA2NzAuMTY1MzMzYTQyLjY2NjY2NyA0Mi42NjY2NjcgMCAxIDEtNjAuMzMwNjY2LTYwLjMzMDY2NmwyNTYtMjU2YTQyLjY2NjY2NyA0Mi42NjY2NjcgMCAwIDEgNTkuMDA4LTEuMjhsMjU2IDIzNC42NjY2NjZhNDIuNjY2NjY3IDQyLjY2NjY2NyAwIDEgMS01Ny42ODUzMzQgNjIuODkwNjY3bC0yMjUuODc3MzMzLTIwNy4wNjEzMzMtMjI3LjExNDY2NyAyMjcuMTE0NjY2eiIgZmlsbD0iIzlhOThjMyIgcC1pZD0iMzM2MTIiPjwvcGF0aD48L3N2Zz4=')
     0 0/24px 24px !important;
   padding: 0 !important;
   transform: rotate(135deg) !important;

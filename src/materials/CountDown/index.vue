@@ -2,7 +2,7 @@
   <div
     class="wrapper material-countdown"
     :style="{
-      fontSize: componentSetting.textFontSize + 'px',
+      fontSize: clampDisplayFontSize(componentSetting.textFontSize, 18),
       color: componentSetting.textColor,
       textShadow: componentSetting.textShadow,
       padding: componentSetting.padding + 'px',
@@ -31,6 +31,7 @@
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import Unset from '@/components/Tools/Unset.vue'
 import { mapPosition } from '@/plugins/position-selector'
+import { clampDisplayFontSize } from '@/utils'
 import dayjs from 'dayjs'
 export default defineComponent({
   name: 'CountDown',

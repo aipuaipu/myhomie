@@ -173,3 +173,14 @@ export const isIOSSafari = () => {
   const safariIos = /^((?!CriOS).)*Safari/.test(ua);
   return iOS && webkit && !ua.match(/CriOS/) && safariIos;
 }
+
+// 判断是否为纯触摸设备（手机/平板）。带触摸屏的笔记本（hover可用）会返回false，
+// 避免 `ontouchstart in window` 把触屏笔记本误判成移动端
+export const isTouchDevice = () => {
+  if (typeof window === 'undefined' || !window.matchMedia) return false
+  return window.matchMedia('(hover: none) and (pointer: coarse)').matches
+}
+
+// 展示型文本的响应式字号：生成CSS min()值，窄视口下按vw钳制防止大字号溢出组件，
+// 宽视口下vw项远大于配置值，px配置原样生效。vwMax≈文本宽度(em数)*100/期望最少显示字符宽度
+export const clampDisplayFontSize = (size: number, vwMax: number) => `min(${size}px, ${vwMax}vw)`

@@ -53,6 +53,11 @@ body {
   background: #262636;
   overflow-x: hidden;
 }
+
+/* 触摸端消除双击缩放延迟，避免与 dblclick 交互冲突；保留捏合缩放 */
+html {
+  touch-action: manipulation;
+}
 textarea {
   font-family: Roboto, sans-serif, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
@@ -315,7 +320,9 @@ body {
   max-width: 320px;
 }
 
-.vue-grid-item {
+/* grid-layout-plus 的栅格项关闭过渡，保持拖拽缩放跟手 */
+.vgl-item,
+.vgl-item__wrapper {
   transition: none !important;
 }
 

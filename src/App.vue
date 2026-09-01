@@ -34,7 +34,7 @@ import TabCarousel from './components/Global/TabCarousel.vue'
 import vMouseMenu from '@/plugins/mouse-menu'
 import { useStore } from '@/store'
 import { useI18n } from 'vue-i18n'
-import { uid, loadHarmonyOSFont, isIOSSafari } from '@/utils'
+import { uid, loadHarmonyOSFont, isIOSSafari, isTouchDevice } from '@/utils'
 import { svgBase64ToPng } from '@/utils/images'
 import Icon from '@/components/Tools/Icon.vue'
 import { ElNotification } from 'element-plus'
@@ -43,7 +43,7 @@ const global = computed(() => store.global)
 const isLock = computed(() => store.isLock)
 const { t } = useI18n()
 
-const isMobile = 'ontouchstart' in window
+const isMobile = isTouchDevice()
 
 if (global.value.siteTitle) {
   document.title = global.value.siteTitle

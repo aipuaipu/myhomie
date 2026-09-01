@@ -3,7 +3,7 @@
     ref="verseElement"
     class="wrapper material-verse"
     :style="{
-      fontSize: componentSetting.textFontSize + 'px',
+      fontSize: clampDisplayFontSize(componentSetting.textFontSize, 40),
       color: componentSetting.textColor,
       textShadow: componentSetting.textShadow,
       padding: componentSetting.padding + 'px',
@@ -22,7 +22,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { mapPosition } from '@/plugins/position-selector'
-import { execCopy } from '@/utils'
+import { execCopy, clampDisplayFontSize } from '@/utils'
 import { ElNotification } from 'element-plus'
 import { useStore } from '@/store'
 import { useI18n } from 'vue-i18n'
