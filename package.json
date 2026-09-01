@@ -23,6 +23,7 @@
     "dev": "vite",
     "build": "cross-env VITE_APP_BUILD_MODE=cdn vite build",
     "build:pages": "cross-env VITE_APP_BUILD_MODE=pages vite build",
+    "build:cfpages": "cross-env VITE_APP_BUILD_MODE=cfpages vite build",
     "upload": "node scripts/upload-cdn.cjs",
     "serve": "vite preview",
     "build:crx": "cross-env VITE_APP_BUILD_MODE=crx vite build",

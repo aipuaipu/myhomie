@@ -10,6 +10,7 @@ let base = '/'
 if (process.env.VITE_APP_BUILD_MODE === 'crx') base = './'
 if (process.env.VITE_APP_BUILD_MODE === 'cdn') base = 'https://cdn.kongfandong.cn/howdz/dist/'
 if (process.env.VITE_APP_BUILD_MODE === 'pages') base = '/myhomie/'
+if (process.env.VITE_APP_BUILD_MODE === 'cfpages') base = '/'
 
 // https://vitejs.dev/config/
 export default defineConfig({

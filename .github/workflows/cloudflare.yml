@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build:pages
+      - run: npm run build:cfpages
       - name: Create Cloudflare Pages project (if not exists)
         run: npx wrangler pages project create myhomie --production-branch=main || true
         env:
