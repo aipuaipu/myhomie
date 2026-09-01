@@ -11,25 +11,34 @@
     }"
   >
     <div class="daily-hot">
-      <div class="classify-wrapper">
-        <div 
-          v-for="item in classifyList" 
-          :key="item.value" 
-          :class="['classify-item', activeClassify === item.value ? 'active' : '']"
-          @click="onChangeClassify(item)"
-        >
-          {{  item.label }}
-        </div>
+      <div class="classify-header">
+        <span class="classify-active-label">{{ activeClassifyLabel }}</span>
+        <span
+          class="classify-toggle"
+          @click="showSwitcher = !showSwitcher"
+        >切换</span>
       </div>
+      <transition name="switcher-slide">
+        <div v-show="showSwitcher" class="classify-switcher">
+          <div
+            v-for="item in classifyList"
+            :key="item.value"
+            :class="['classify-tag', activeClassify === item.value ? 'active' : '']"
+            @click="onSwitchClassify(item)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
+      </transition>
       <div class="list-wrapper scrollbar1">
         <div v-if="listLoading" class="loading">Loading...</div>
         <div v-else-if="listError" class="error">Something Error.</div>
         <template v-else>
-          <a 
-            v-for="item in list" 
-            :key="item.title" 
-            class="list-item" 
-            :href="item.url" 
+          <a
+            v-for="item in list"
+            :key="item.title"
+            class="list-item"
+            :href="item.url"
             :title="item.title"
             :style="!isLock ? 'pointer-events: none' : ''"
             target="_blank">
@@ -69,6 +78,11 @@ const classifyList = computed(() => {
   return DAILY_HOT_CLASSIFY.filter(item => props.componentSetting.enableList.includes(item.value))
 })
 const activeClassify = ref('')
+const showSwitcher = ref(false)
+const activeClassifyLabel = computed(() => {
+  const found = classifyList.value.find(item => item.value === activeClassify.value)
+  return found ? found.label : ''
+})
 
 onMounted(() => {
   activeClassify.value = classifyList.value[0].value
@@ -77,33 +91,32 @@ onMounted(() => {
 
 const positionCSS = computed(() => mapPosition(props.componentSetting.position))
 
-const onChangeClassify = (item: Classify) => {
+const onSwitchClassify = (item: Classify) => {
   activeClassify.value = item.value
+  showSwitcher.value = false
   getList()
 }
 
 const listLoading = ref(false)
 const listError = ref(false)
 const list = ref<ListItem[]>([])
+const UAPIS_BASE = 'https://uapis.cn/api/v1/hotboard'
+const DEFAULT_API_KEY = 'uapi-aucaiixs31YDT02g6c0TV0gtFyhpADae7ZqPeA5f'
 const getList = async (retry = false) => {
   listLoading.value = true
   listError.value = false
   list.value = []
   try {
     let _classify = activeClassify.value
-    const url = retry ? `https://hot.howdz.xyz/${activeClassify.value}` : `/hot/${activeClassify.value}`
-    const res = await request({ url, timeout: retry ? 5000 : 10000 })
-    if (res.code !== 200) {
-      throw new Error('API Error')
-    }
+    const url = `${UAPIS_BASE}/${activeClassify.value}`
+    const apiKey = props.componentSetting.apiKey || DEFAULT_API_KEY
+    const res = await request({ url, timeout: retry ? 5000 : 10000, headers: { 'X-API-Key': apiKey } })
     if (_classify === activeClassify.value) {
-      list.value = res.data.reduce((prev, curr, index) => {
-        if (index < props.componentSetting.limit) {
-          return [...prev, { title: curr.title, url: curr.url }]
-        } else {
-          return prev
-        }
-      }, [])
+      const items = res.list || []
+      list.value = items.slice(0, props.componentSetting.limit).map((item: any) => ({
+        title: item.title,
+        url: item.url
+      }))
     }
   } catch {
     if (!retry) {
@@ -131,25 +144,71 @@ const getList = async (retry = false) => {
     height: 100%;
     flex-direction: column;
     user-select: none;
-    .classify-wrapper {
+    .classify-header {
       display: flex;
-      flex-wrap: wrap;
-      .classify-item {
-        padding: 0.3em 0.5em;
+      align-items: center;
+      gap: 0.5em;
+      .classify-active-label {
+        font-weight: bold;
+        opacity: 0.9;
+      }
+      .classify-toggle {
+        font-size: 0.85em;
+        padding: 0.15em 0.5em;
         border-radius: 4px;
         cursor: pointer;
-        margin-right: 0.3em;
-        margin-bottom: 0.3em;
-        &.active {
-          background: rgba(255,255,255,0.2);
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        &:hover {
+          opacity: 1;
+          background: rgba(255,255,255,0.15);
         }
       }
+    }
+    .classify-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3em;
+      padding: 0.4em 0;
+      overflow-y: auto;
+      max-height: 50%;
+      .classify-tag {
+        padding: 0.2em 0.5em;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.2s;
+        &:hover {
+          opacity: 1;
+          background: rgba(255,255,255,0.15);
+        }
+        &.active {
+          background: rgba(255,255,255,0.2);
+          opacity: 1;
+        }
+      }
+    }
+    .switcher-slide-enter-active,
+    .switcher-slide-leave-active {
+      transition: all 0.25s ease;
+      overflow: hidden;
+    }
+    .switcher-slide-enter-from,
+    .switcher-slide-leave-to {
+      max-height: 0;
+      opacity: 0;
+      padding: 0;
+    }
+    .switcher-slide-enter-to,
+    .switcher-slide-leave-from {
+      max-height: 50%;
+      opacity: 1;
     }
     .list-wrapper {
       flex: 1;
       height: 100%;
       overflow-y: auto;
-      margin-top: 0.6em;
+      margin-top: 0.4em;
       .list-item,
       .loading,
       .error {

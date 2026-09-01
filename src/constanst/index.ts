@@ -74,7 +74,7 @@ export const MATERIAL_LIST_MAP: Record<string, MaterialConstanst> = {
   },
   DailyHot: {
     label: 'DailyHot',
-    text: '今日热榜',
+    text: '每日热榜',
     img: 'https://cdn.kongfandong.cn/howdz-material/DailyHot.png?imageView2/2/w/256'
   },
   TodoList: {
@@ -120,18 +120,20 @@ export const BG_IMG_TYPE_MAP = {
 export const DAILY_HOT_CLASSIFY = [
   { label: '微博', value: 'weibo' },
   { label: '知乎', value: 'zhihu' },
-  { label: '少数派', value: 'sspai' },
   { label: '哔哩哔哩', value: 'bilibili' },
-  { label: '掘金', value: 'juejin' },
-  { label: '豆瓣', value: 'douban_new' },
-  { label: '百度贴吧', value: 'tieba' },
-  { label: '今日头条', value: 'toutiao' },
-  { label: '36氪', value: '36kr' },
+  { label: '抖音', value: 'douyin' },
   { label: '百度', value: 'baidu' },
-  { label: '抖音', value: 'douyin'},
-  { label: '腾讯新闻', value: 'newsqq' },
-  { label: '网易新闻', value: 'netease' },
-  { label: 'Github', value: 'github'},
+  { label: '今日头条', value: 'toutiao' },
+  { label: '百度贴吧', value: 'tieba' },
+  { label: '少数派', value: 'sspai' },
+  { label: 'IT之家', value: 'ithome' },
+  { label: '36氪', value: '36kr' },
+  { label: '掘金', value: 'juejin' },
+  { label: '腾讯新闻', value: 'qq-news' },
+  { label: '网易新闻', value: 'netease-news' },
+  { label: '澎湃新闻', value: 'thepaper' },
   { label: 'V2EX', value: 'v2ex' },
-  { label: '澎湃新闻', value: 'thepaper' }
+  { label: '酷安', value: 'coolapk' },
+  { label: '虎扑', value: 'hupu' },
+  { label: '新浪网', value: 'sina' }
 ]
