@@ -44,7 +44,53 @@ import { useI18n } from 'vue-i18n'
 // --- 免费 API（无需 key，CORS 友好） ---
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search'
 const WEATHER_API = 'https://api.open-meteo.com/v1/forecast'
-const IP_GEO_API = 'https://ipinfo.io/json'
+// IP 备用：国内可达（ipinfo.io 在部分地区被墙）
+const IP_GEO_API_CN = 'https://whois.pconline.com.cn/ipJson/json'
+
+/** 通过浏览器 Geolocation 获取经纬度（需用户授权） */
+function getBrowserGeo(): Promise<{ latitude: number; longitude: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      (err) => reject(err),
+      { timeout: 8000, maximumAge: 300000 }
+    )
+  })
+}
+
+/** 通过国内 IP 接口获取城市名，再用 geocoding 获取坐标 */
+async function getGeoByIP(): Promise<{ latitude: number; longitude: number; city: string }> {
+  // 尝试多个 IP 接口（应对 CORS / 被墙）
+  const ipApis = [
+    { url: 'https://ipwho.is/', parse: (d: any) => ({ city: d.city, lat: d.latitude, lon: d.longitude }) },
+    { url: IP_GEO_API_CN, parse: (d: any) => ({ city: (d.city || d.province || '').replace(/[市城区]/g, ''), lat: 0, lon: 0 }) }
+  ]
+  for (const api of ipApis) {
+    try {
+      const res = await fetch(api.url)
+      const data = await res.json()
+      const info = api.parse(data)
+      if (info.lat && info.lon) {
+        return { latitude: info.lat, longitude: info.lon, city: info.city || '当前位置' }
+      }
+      if (info.city) {
+        // 只有城市名，需要 geocoding 转坐标
+        const searchUrl = `${GEOCODING_API}?name=${encodeURIComponent(info.city)}&count=1&language=zh`
+        const searchRes = await fetch(searchUrl)
+        const searchData = await searchRes.json()
+        if (searchData.results && searchData.results.length > 0) {
+          const { latitude, longitude, name } = searchData.results[0]
+          return { latitude, longitude, city: (name || info.city).replace(/[市城区]/g, '') }
+        }
+      }
+    } catch { /* try next API */ }
+  }
+  throw new Error('All IP geo APIs failed')
+}
 
 export default defineComponent({
   name: 'Weather',
@@ -92,15 +138,22 @@ export default defineComponent({
     ], async () => {
       try {
         if (props.componentSetting.weatherMode === 1) {
-          // 自动模式：通过 IP 获取位置
-          const res = await fetch(IP_GEO_API)
-          const data = await res.json()
-          if (data.latitude && data.longitude) {
-            lat.value = data.latitude
-            lon.value = data.longitude
-            cityName.value = (data.city || '').replace(/[市城区]/g, '')
-          } else {
-            throw new Error('IP geolocation failed')
+          // 自动模式：优先浏览器定位 → 备用 IP 接口
+          try {
+            const geo = await getBrowserGeo()
+            lat.value = geo.latitude
+            lon.value = geo.longitude
+            cityName.value = '当前位置'
+          } catch {
+            // 浏览器定位失败（用户拒绝/超时），回退到国内 IP 接口
+            try {
+              const ipGeo = await getGeoByIP()
+              lat.value = ipGeo.latitude
+              lon.value = ipGeo.longitude
+              cityName.value = ipGeo.city
+            } catch {
+              throw new Error('All geo methods failed')
+            }
           }
         } else {
           // 手动模式：通过城市名搜索坐标

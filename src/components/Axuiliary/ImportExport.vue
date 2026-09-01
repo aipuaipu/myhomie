@@ -13,6 +13,9 @@
             <el-radio :label="2">
               {{ $t('导出JSON文件') }}
             </el-radio>
+            <el-radio :label="3">
+              {{ $t('WebDAV同步') }}
+            </el-radio>
           </el-radio-group>
           <div v-if="exportType === 1" class="gen-key-wrapper">
             <button
@@ -53,6 +56,18 @@
               {{ $t('导出JSON') }}
             </button>
           </div>
+          <div v-if="exportType === 3" class="webdav-wrapper">
+            <WebdavConfigForm v-model="webdavConfig" />
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="margin: 8px 0 0"
+              :loading="webdavUploadLoading"
+              @click="handleWebdavUpload"
+            >
+              {{ $t('上传到WebDAV') }}
+            </button>
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -69,6 +84,9 @@
             </el-radio>
             <el-radio :label="2">
               {{ $t('导入JSON文件') }}
+            </el-radio>
+            <el-radio :label="3">
+              {{ $t('WebDAV同步') }}
             </el-radio>
           </el-radio-group>
           <div v-if="importType === 1" class="import-key-wrapper">
@@ -100,6 +118,18 @@
             </button>
             <input ref="jsonRef" type="file" accept=".json" style="display: none">
           </div>
+          <div v-if="importType === 3" class="webdav-wrapper">
+            <WebdavConfigForm v-model="webdavConfig" />
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="margin: 8px 0 0"
+              :loading="webdavDownloadLoading"
+              @click="handleWebdavDownload"
+            >
+              {{ $t('从WebDAV下载') }}
+            </button>
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -116,6 +146,15 @@ import { ajaxPost, execCopy } from '@/utils'
 import { ElNotification } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { zip, unzip } from '@/utils/gzip'
+import {
+  getSavedWebdavConfig,
+  saveWebdavConfig,
+  testConnection,
+  uploadConfig,
+  downloadConfig,
+  type WebdavConfig
+} from '@/utils/webdav'
+import WebdavConfigForm from './WebdavConfigForm.vue'
 
 const props = defineProps({
   visible: {
@@ -131,6 +170,11 @@ const genExportKeyLoading = ref(false)
 const importKeyLoading = ref(false)
 const jsonRef = ref()
 
+// WebDAV state
+const webdavConfig = ref<WebdavConfig>(getSavedWebdavConfig())
+const webdavUploadLoading = ref(false)
+const webdavDownloadLoading = ref(false)
+
 const { t } = useI18n()
 
 watch(
@@ -142,7 +186,11 @@ watch(
   }
 )
 
-const genExportKey = async () => {
+watch(webdavConfig, (val) => {
+  saveWebdavConfig(val)
+}, { deep: true })
+
+const getExportData = () => {
   const {
     list,
     affix,
@@ -151,20 +199,26 @@ const genExportKey = async () => {
     showRefreshBtn,
     tabList,
     showTabSwitchBtn,
-    enableKeydownSwitchTab
+    enableKeydownSwitchTab,
+    backgroundEffectActive
   } = store
+  return JSON.stringify({
+    list,
+    affix,
+    global,
+    showBackgroundEffect,
+    showRefreshBtn,
+    tabList,
+    showTabSwitchBtn,
+    enableKeydownSwitchTab,
+    backgroundEffectActive
+  })
+}
+
+const genExportKey = async () => {
   genExportKeyLoading.value = true
   try {
-    const dataToString = JSON.stringify({
-      list,
-      affix,
-      global,
-      showBackgroundEffect,
-      showRefreshBtn,
-      tabList,
-      showTabSwitchBtn,
-      enableKeydownSwitchTab
-    })
+    const dataToString = getExportData()
     const zipData = zip(dataToString)
     const toMd5 = md5(zipData)
     const format = parseInt(`0x${toMd5}`, 16).toString(36).toUpperCase().slice(0, 5)
@@ -200,32 +254,7 @@ const handleCopyExportKey = () => {
 
 const handleExportJson = () => {
   try {
-    const {
-      list,
-      affix,
-      global,
-      showBackgroundEffect,
-      showRefreshBtn,
-      tabList,
-      showTabSwitchBtn,
-      enableKeydownSwitchTab,
-      backgroundEffectActive
-    } = store
-    const dataToString = JSON.stringify(
-      {
-        list,
-        affix,
-        global,
-        showBackgroundEffect,
-        showRefreshBtn,
-        tabList,
-        showTabSwitchBtn,
-        enableKeydownSwitchTab,
-        backgroundEffectActive
-      },
-      null,
-      2
-    )
+    const dataToString = getExportData()
     saveAs(
       new Blob([dataToString], { type: 'application/json,charset=utf-8;' }),
       'Dashboard.json'
@@ -323,6 +352,97 @@ const handleUploadJSON = () => {
     }
   }
 }
+
+// WebDAV handlers
+const validateWebdavConfig = (): boolean => {
+  const c = webdavConfig.value
+  if (!c.url || !c.username || !c.password) {
+    ElNotification({
+      title: t('提示'),
+      type: 'warning',
+      message: t('请填写完整的WebDAV配置')
+    })
+    return false
+  }
+  return true
+}
+
+const handleWebdavUpload = async () => {
+  if (!validateWebdavConfig()) return
+  webdavUploadLoading.value = true
+  try {
+    // Test connection first
+    const test = await testConnection(webdavConfig.value)
+    if (!test.success) {
+      ElNotification({
+        title: t('异常'),
+        type: 'error',
+        message: t('WebDAV连接失败') + ': ' + test.message
+      })
+      return
+    }
+
+    const data = getExportData()
+    const result = await uploadConfig(webdavConfig.value, data)
+    if (result.success) {
+      ElNotification({
+        title: t('提示'),
+        type: 'success',
+        message: t('配置已上传到WebDAV')
+      })
+    } else {
+      ElNotification({
+        title: t('异常'),
+        type: 'error',
+        message: result.message
+      })
+    }
+  } catch (e) {
+    ElNotification({
+      title: t('异常'),
+      type: 'error',
+      message: (e as Error).message || t('出现未知异常')
+    })
+  } finally {
+    webdavUploadLoading.value = false
+  }
+}
+
+const handleWebdavDownload = async () => {
+  if (!validateWebdavConfig()) return
+  webdavDownloadLoading.value = true
+  try {
+    const result = await downloadConfig(webdavConfig.value)
+    if (result.success && result.data) {
+      try {
+        const importValue = JSON.parse(result.data)
+        if (confirm(t('已找到相应同步配置，配置会覆盖本地浏览器历史数据，是否继续？'))) {
+          updateConfig(importValue)
+        }
+      } catch {
+        ElNotification({
+          title: t('异常'),
+          type: 'error',
+          message: t('识别文件错误，请检查文件')
+        })
+      }
+    } else {
+      ElNotification({
+        title: t('异常'),
+        type: 'error',
+        message: result.message
+      })
+    }
+  } catch (e) {
+    ElNotification({
+      title: t('异常'),
+      type: 'error',
+      message: (e as Error).message || t('出现未知异常')
+    })
+  } finally {
+    webdavDownloadLoading.value = false
+  }
+}
 </script>
 <style lang="scss" scoped>
 .wrapper {
@@ -347,7 +467,8 @@ const handleUploadJSON = () => {
     }
     .gen-key-wrapper,
     .json-wrapper,
-    .import-key-wrapper {
+    .import-key-wrapper,
+    .webdav-wrapper {
       margin: 10px 0;
       display: flex;
       align-items: center;
@@ -366,7 +487,8 @@ const handleUploadJSON = () => {
       }
     }
     .gen-key-wrapper,
-    .json-wrapper {
+    .json-wrapper,
+    .webdav-wrapper {
       width: 100%;
     }
     .import-key-wrapper {

@@ -16,7 +16,7 @@ export default async (options: {
   if (method === 'get' && options.params) {
     const params = new URLSearchParams(options.params)
     target += `?${params}`
-  } 
+  }
   if (method === 'post' && options.data) {
     if (options.data instanceof FormData) {
       requestInit.body = options.data

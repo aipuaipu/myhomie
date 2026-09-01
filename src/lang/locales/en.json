@@ -440,5 +440,17 @@
   "巴黎": "Europe/Paris",
   "悉尼": "Australia/Sydney",
   "迪拜": "Asia/Dubai",
-  "洛杉矶": "America/Los_Angeles"
+  "洛杉矶": "America/Los_Angeles",
+
+  "WebDAV同步": "WebDAV",
+  "WebDAV地址": "Server URL",
+  "用户名": "Username",
+  "密码": "Password",
+  "文件路径": "File Path",
+  "上传到WebDAV": "Upload to WebDAV",
+  "从WebDAV下载": "Download from WebDAV",
+  "配置已上传到WebDAV": "Configuration uploaded to WebDAV",
+  "WebDAV连接失败": "WebDAV connection failed",
+  "请填写完整的WebDAV配置": "Please fill in all WebDAV fields",
+  "webdavTips": "Supports Nextcloud, 坚果云 (Jianguoyun), Synology, etc. The server must allow CORS from this page origin."
 }
