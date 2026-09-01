@@ -1,4 +1,4 @@
-name: Deploy Doc Website
+name: Deploy to GitHub Pages
 on:
   push:
     branches:
@@ -9,31 +9,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
       - name: Install dependencies
-        run: yarn
+        run: npm install
 
-      - name: Build Demo
-        run: yarn build
-      
-      - name: Build CRX file
-        run: yarn build:crx
-        
-      - name: Move CRX file
-        run: yarn move:crx
-      
-      #- name: Build Electorn file
-      #  run: yarn build:electron
+      - name: Build
+        run: npm run build:pages
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: dist
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: dist
