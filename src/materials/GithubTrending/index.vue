@@ -126,39 +126,70 @@ const isDark = computed(
 const grey1 = computed(() => (isDark.value ? '#666' : '#ccc'))
 const grey2 = computed(() => (isDark.value ? '#777' : '#bbb'))
 const grey3 = computed(() => (isDark.value ? '#888' : '#aaa'))
+
+// Language color mapping (common languages)
+const LANGUAGE_COLORS: Record<string, string> = {
+  JavaScript: '#f1e05a',
+  TypeScript: '#3178c6',
+  Python: '#3572A5',
+  Java: '#b07219',
+  'C++': '#f34b7d',
+  C: '#555555',
+  Go: '#00ADD8',
+  Rust: '#dea584',
+  Ruby: '#701516',
+  PHP: '#4F5D95',
+  Swift: '#F05138',
+  Kotlin: '#A97BFF',
+  Dart: '#00B4AB',
+  Vue: '#41b883',
+  HTML: '#e34c26',
+  CSS: '#563d7c',
+  Shell: '#89e051',
+  'Jupyter Notebook': '#DA5B0B',
+  R: '#198CE7',
+  Scala: '#c22d40',
+  Lua: '#000080',
+  Haskell: '#5e5086',
+  Elixir: '#6e4a7e',
+  Zig: '#ec915c',
+  Nix: '#7e7eff'
+}
+
+const getLanguageColor = (language: string | null): string => {
+  if (!language) return '#ccc'
+  return LANGUAGE_COLORS[language] || '#ccc'
+}
+
 const getList = async () => {
   try {
     loading.value = true
     error.value = false
-    const data = await request({ url: '/api/githubTrendingList' })
-    if (data) {
-      const _list = data.slice(0, props.componentSetting.limit).map((item: any) => {
-        const {
-          rank: id,
-          full_name: title,
-          language,
-          color,
-          description,
-          forked,
-          stargazers_count: totalStar,
-          todayStar,
-          html_url: link
-        } = item
+    // Use GitHub Search API to get recently popular repositories
+    const date = new Date()
+    date.setDate(date.getDate() - 30)
+    const dateStr = date.toISOString().split('T')[0]
+    const limit = props.componentSetting.limit || 10
+    const data = await request({
+      url: `https://api.github.com/search/repositories?q=created:>${dateStr}+stars:>100&sort=stars&order=desc&per_page=${limit}`
+    })
+    if (data && data.items) {
+      const _list = data.items.slice(0, limit).map((item: any, index: number) => {
         return {
-          id,
-          title,
-          language,
-          color,
-          description,
-          forked,
-          todayStar,
-          totalStar,
-          link
+          id: index + 1,
+          title: item.full_name,
+          language: item.language,
+          color: getLanguageColor(item.language),
+          description: item.description,
+          forked: item.forks_count,
+          todayStar: null,
+          totalStar: item.stargazers_count,
+          link: item.html_url
         }
       })
       list.value = _list
     } else {
-      throw new Error('Api server error')
+      throw new Error('No data')
     }
   } catch (e) {
     error.value = true
