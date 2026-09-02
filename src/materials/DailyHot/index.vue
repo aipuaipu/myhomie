@@ -74,8 +74,17 @@ type ListItem = {
   url: string
 }
 
+// 支持的平台 value 集合（用于运行时校验）
+const validValues = new Set(DAILY_HOT_CLASSIFY.map(item => item.value))
+// 默认启用列表（与 setting.tsx 保持一致）
+const DEFAULT_ENABLE_LIST = ['weibo', 'zhihu', 'sspai', 'bilibili']
+
 const classifyList = computed(() => {
-  return DAILY_HOT_CLASSIFY.filter(item => props.componentSetting.enableList.includes(item.value))
+  // 过滤掉已废弃/不存在的选项
+  const valid = (props.componentSetting.enableList || []).filter((v: string) => validValues.has(v))
+  // 如果过滤后为空，回退到默认值
+  const effective = valid.length > 0 ? valid : DEFAULT_ENABLE_LIST
+  return DAILY_HOT_CLASSIFY.filter(item => effective.includes(item.value))
 })
 const activeClassify = ref('')
 const showSwitcher = ref(false)
