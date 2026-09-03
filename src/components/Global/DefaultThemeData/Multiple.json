@@ -182,6 +182,7 @@
             "icon": "https://kongfandong.cn/api/icon/v2?url=elevenlabs.io"
           }
         },
+        "keyboardConfigVersion": 2,
         "position": 5,
         "useKeyboardEvent": true,
         "jumpType": 1,

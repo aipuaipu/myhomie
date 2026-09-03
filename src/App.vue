@@ -38,10 +38,25 @@ import { uid, loadHarmonyOSFont, isIOSSafari, isTouchDevice } from '@/utils'
 import { svgBase64ToPng } from '@/utils/images'
 import Icon from '@/components/Tools/Icon.vue'
 import { ElNotification } from 'element-plus'
+import Multiple from '@/components/Global/DefaultThemeData/Multiple.json'
+import { migrateLegacyKeyboardMap } from '@/utils/keyboard-migration'
 const store = useStore()
 const global = computed(() => store.global)
 const isLock = computed(() => store.isLock)
 const { t } = useI18n()
+
+const migrateLegacyKeyboardConfig = () => {
+  const defaultCollection = Multiple.list.find(item => item.material === 'Collection')
+  const defaultKeyMap = defaultCollection?.componentSetting?.userSettingKeyMap
+  if (!defaultKeyMap) return
+
+  const listResult = migrateLegacyKeyboardMap(store.list, defaultKeyMap)
+  const affixResult = migrateLegacyKeyboardMap(store.affix, defaultKeyMap)
+  if (listResult.changed) store.updateList(listResult.components)
+  if (affixResult.changed) store.updateAffix(affixResult.components)
+}
+
+migrateLegacyKeyboardConfig()
 
 const isMobile = isTouchDevice()
 
