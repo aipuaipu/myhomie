@@ -17,13 +17,14 @@
         :style="{ cursor: componentSetting.clickActionType ? 'pointer' : 'default' }"
         @click="handleClickAction"
       >
-        <img
-          :src="logo"
-          alt="Weibo"
-          :style="{ filter: `drop-shadow(${componentSetting.iconShadow})` }"
-        >
+        <svg viewBox="0 0 24 24" :style="{ filter: `drop-shadow(${componentSetting.iconShadow})` }">
+          <path
+            :fill="componentSetting.textColor"
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+          />
+        </svg>
         <div class="logo-text">
-          微博热搜
+          AI快讯
         </div>
       </div>
       <div v-if="loading" class="loading">
@@ -35,21 +36,18 @@
       <div v-else class="list">
         <div v-for="item in list" :key="item.id" class="list-item">
           <div class="num" style="width: 24px; height: 24px">
-            <img v-if="item.num" :src="item.num" style="width: 100%; height: 100%">
+            <span v-if="item.rank" class="rank" :class="{ hot: item.rank <= 3 }">{{ item.rank }}</span>
           </div>
           <div class="title">
-            <a 
-              :href="item.link" 
-              :target="componentSetting.jumpType === 2 ? '_self': '_blank'" 
+            <a
+              :href="item.link"
+              :target="componentSetting.jumpType === 2 ? '_self': '_blank'"
               :style="!isLock ? 'pointer-events: none' : ''"
               :title="item.title"
             >{{ item.title }}</a>
           </div>
-          <div v-if="item.count" class="count">
-            {{ item.count }}w
-          </div>
-          <div class="icon" style="width: 24px; height: 24px">
-            <img v-if="item.icon" :src="item.icon" style="width: 100%; height: 100%">
+          <div v-if="item.source" class="source" :title="item.source">
+            {{ item.source }}
           </div>
         </div>
       </div>
@@ -70,7 +68,6 @@ const props = defineProps({
 })
 const store = useStore()
 const isLock = computed(() => store.isLock)
-const logo = 'https://h5.sinaimg.cn/m/weibo-lite/img/pwalogo.417d1674.svg'
 const list = ref<any[]>([])
 const loading = ref(false)
 const error = ref(false)
@@ -78,17 +75,30 @@ const getList = async () => {
   try {
     loading.value = true
     error.value = false
-    const { list: _list } = await request({ url: `/api/weiboList?limit=${props.componentSetting.limit || 10}` })
-    list.value = _list.map((item: any) => {
-      return {
-        num: item.pic,
-        id: item.desc,
-        title: item.desc,
-        icon: item.icon,
-        link: item.scheme,
-        count: ~~(item.desc_extr / 10000)
+    const limit = props.componentSetting.limit || 10
+    const data = await request({
+      url: `https://aihot.virxact.com/api/v1/hot-topics`,
+      headers: {
+        'User-Agent': 'aihot-api/1.0 aihot-actor/howdz-dashboard'
+      },
+      params: {
+        limit: String(limit)
       }
     })
+    if (data && data.items) {
+      list.value = data.items.slice(0, limit).map((item: any) => {
+        return {
+          id: item.id,
+          rank: item.rank,
+          title: item.title,
+          source: item.source?.name || '',
+          link: item.links?.original || item.links?.aihot || '#',
+          count: item.signalCount || item.sourceCount || 0
+        }
+      })
+    } else {
+      throw new Error('No data')
+    }
   } catch (e) {
     error.value = true
     console.error(e)
@@ -118,7 +128,7 @@ const handleClickAction = () => {
   if (props.componentSetting.clickActionType === 1) {
     init()
   } else if (props.componentSetting.clickActionType === 2) {
-    window.open('https://weibo.com/')
+    window.open('https://aihot.virxact.com/')
   }
 }
 </script>
@@ -136,7 +146,7 @@ const handleClickAction = () => {
       margin-bottom: 0.5em;
       display: flex;
       align-items: center;
-      img {
+      svg {
         width: 2em;
         height: auto;
       }
@@ -154,6 +164,19 @@ const handleClickAction = () => {
         align-items: center;
         font-size: 1em;
         line-height: 1.5;
+        .num {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          .rank {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #99a;
+            &.hot {
+              color: #ff6b6b;
+            }
+          }
+        }
         .title {
           flex: 1;
           overflow: hidden;
@@ -164,11 +187,16 @@ const handleClickAction = () => {
             text-decoration: none;
           }
         }
-        .count {
-          font-size: 0.8em;
+        .source {
+          font-size: 0.75em;
           color: #99a;
-          margin: 0 0.2em;
+          margin-left: 0.5em;
           text-shadow: none;
+          max-width: 120px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
       }
     }

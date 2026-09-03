@@ -89,7 +89,7 @@ export const MATERIAL_LIST_MAP: Record<string, MaterialConstanst> = {
   },
   WeiboList: {
     label: 'WeiboList',
-    text: '微博热搜',
+    text: 'AI快讯',
     img: 'https://cdn.kongfandong.cn/howdz-material/WeiboList.png?imageView2/2/w/256'
   },
   GithubTrending: {
