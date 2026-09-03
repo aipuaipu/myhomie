@@ -369,7 +369,7 @@ export default defineComponent({
             try {
               const iconPath = await request({
                 url: `/api/icon?url=${encodeURIComponent(state.formData.link)}&type=link`,
-                return : 'text'
+                responseType: 'text'
               })
               if (iconPath) {
                 state.formData.iconType = 'network'

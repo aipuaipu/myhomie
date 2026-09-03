@@ -117,6 +117,7 @@
       <transition name="fadeInUp" :css="!isLowPreformance">
         <div
           v-if="showAddPanel && availableAddEngines.length > 0"
+          ref="addPanel"
           class="engine-selector add-panel"
           :style="{
             backdropFilter: componentSetting.backdropBlur ? 'blur(5px)' : 'none',
@@ -128,7 +129,7 @@
             :key="item.name"
             class="engine-list-item"
             :title="$t('点击添加')"
-            @click="handleQuickAddEngine(item)"
+            @click.stop="handleQuickAddEngine(item)"
           >
             <img
               v-if="item.iconType === 'local' || item.iconType === 'network'"
@@ -512,8 +513,12 @@ async function removeHistory(index: number) {
 
 // click-outside
 const engineSelector = ref()
+const addPanel = ref()
 function clickEngineWrapperOutside(e: MouseEvent) {
-  if (showEngine.value && !engineSelector.value.contains(e.target)) {
+  const target = e.target as HTMLElement
+  const insideEngine = engineSelector.value?.contains(target)
+  const insideAddPanel = addPanel.value?.contains(target)
+  if (showEngine.value && !insideEngine && !insideAddPanel) {
     showEngine.value = false
     showAddPanel.value = false
   }
