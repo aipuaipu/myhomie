@@ -2,6 +2,7 @@ import { createPinia, defineStore } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { getSupportFontFamilyList } from '@/utils/font'
 import { isTouchDevice } from '@/utils'
+import { migrateSearchEngines } from '@/materials/Search/engines'
 
 export default createPinia().use(piniaPluginPersistedstate)
 
@@ -31,6 +32,21 @@ const getMaxY = (list: ComponentOptions[]) => {
   } else {
     return 0
   }
+}
+
+// Migrate Search engineList: remove Youdao, add Brave
+const migrateSearchSetting = (list: ComponentOptions[]) => {
+  for (const item of list) {
+    if (item.material === 'Search' && item.componentSetting?.engineList) {
+      const cs = item.componentSetting
+      const result = migrateSearchEngines(cs.engineList || [], cs.backupEngineList || [])
+      if (result.changed) {
+        cs.engineList = result.engineList
+        cs.backupEngineList = result.backupEngineList
+      }
+    }
+  }
+  return list
 }
 
 export const useStore = defineStore({
@@ -199,6 +215,10 @@ export const useStore = defineStore({
       'enableKeydownSwitchTab',
       'wallpaperCollectionList',
       'backgroundEffectActive'
-    ]
+    ],
+    afterRestore: (ctx) => {
+      migrateSearchSetting(ctx.store.list)
+      migrateSearchSetting(ctx.store.affix)
+    }
   }
 })
