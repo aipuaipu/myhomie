@@ -342,6 +342,8 @@
   "引擎图标": "Icon Type",
   "是否删除该自定义引擎": "Confirm to delete",
   "无法识别出城市，请重新配置": "Sorry, Can not get weather info for your city at present.",
+  "可选预设引擎": "Available Presets",
+  "点击添加": "Click to add",
 
   "左上": "Top Left",
   "顶部水平居中": "Top Center",

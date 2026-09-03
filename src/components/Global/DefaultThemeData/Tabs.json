@@ -64,16 +64,16 @@
             "iconPath": "https://cdn.kongfandong.cn/img/search-icons/google.svg"
           },
           {
-            "name": "有道词典",
-            "link": "http://dict.youdao.com/w/",
-            "iconType": "local",
-            "iconPath": "https://cdn.kongfandong.cn/img/search-icons/youdao.svg"
-          },
-          {
             "name": "Bilibili",
             "link": "https://search.bilibili.com/all?keyword=",
             "iconType": "local",
             "iconPath": "https://cdn.kongfandong.cn/img/search-icons/bilibili.svg"
+          },
+          {
+            "name": "Brave",
+            "link": "https://search.brave.com/search?q=",
+            "iconType": "local",
+            "iconPath": "https://cdn.kongfandong.cn/img/search-icons/brave.svg"
           }
         ],
         "backupEngineList": [

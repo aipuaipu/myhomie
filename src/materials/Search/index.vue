@@ -109,6 +109,48 @@
               {{ item.name }}
             </div>
           </div>
+          <div class="engine-list-item add-engine-btn" @click.stop="showAddPanel = !showAddPanel">
+            <div class="add-icon">+</div>
+          </div>
+        </div>
+      </transition>
+      <transition name="fadeInUp" :css="!isLowPreformance">
+        <div
+          v-if="showAddPanel && availableAddEngines.length > 0"
+          class="engine-selector add-panel"
+          :style="{
+            backdropFilter: componentSetting.backdropBlur ? 'blur(5px)' : 'none',
+            filter: componentSetting.backdropBlur ? 'drop-shadow(1px 2px 4px #262626)' : 'none'
+          }"
+        >
+          <div
+            v-for="item in availableAddEngines"
+            :key="item.name"
+            class="engine-list-item"
+            :title="$t('点击添加')"
+            @click="handleQuickAddEngine(item)"
+          >
+            <img
+              v-if="item.iconType === 'local' || item.iconType === 'network'"
+              :src="item.iconPath"
+              alt="icon"
+              width="24"
+              height="24"
+            >
+            <img
+              v-if="item.iconType === 'api'"
+              :src="getTargetIcon(item.link)"
+              alt="icon"
+              width="24"
+              height="24"
+            >
+            <div v-if="item.iconType === 'text'" class="no-icon">
+              {{ item.name.slice(0, 1) }}
+            </div>
+            <div class="text">
+              {{ item.name }}
+            </div>
+          </div>
         </div>
       </transition>
       <transition name="fadeInUp" :css="!isLowPreformance">
@@ -173,6 +215,8 @@ import { useStore } from '@/store'
 import { mapPosition } from '@/plugins/position-selector'
 import { getTargetIcon } from '@/utils/images'
 import request from '@/utils/request'
+import { unusedPresetEngines, applyAddEngine } from './engines'
+import type { SearchEngine } from './engines'
 const props = defineProps({
   componentSetting: {
     type: Object,
@@ -196,6 +240,7 @@ const searchKey = ref('')
 const linkSearchArr = ref([])
 const linkSearchArrActive = ref(-1)
 const showTabTips = ref(false)
+const showAddPanel = ref(false)
 const searchInput = ref()
 const bookmarkLink = ref<Bookmark[]>([])
 
@@ -210,7 +255,38 @@ let throttleTimer: number
 const handleChangeEngine = (index: number) => {
   activeEngine.value = index
   showEngine.value = false
+  showAddPanel.value = false
 }
+
+const availableAddEngines = computed(() => {
+  return unusedPresetEngines(
+    props.componentSetting.engineList || [],
+    props.componentSetting.backupEngineList || []
+  )
+})
+
+const handleQuickAddEngine = (engine: SearchEngine) => {
+  const element = JSON.parse(JSON.stringify(props.element))
+  if (props.isAction) {
+    const cs = element.actionSetting.actionClickValue.componentSetting
+    const result = applyAddEngine(engine, cs.engineList, cs.backupEngineList)
+    cs.engineList = result.engineList
+    cs.backupEngineList = result.backupEngineList
+    store.updateActionElement(element)
+  } else {
+    const result = applyAddEngine(
+      engine,
+      element.componentSetting.engineList,
+      element.componentSetting.backupEngineList
+    )
+    element.componentSetting.engineList = result.engineList
+    element.componentSetting.backupEngineList = result.backupEngineList
+    store.editComponent(element)
+  }
+  activeEngine.value = props.componentSetting.engineList.length - 1
+  showAddPanel.value = false
+}
+
 const handleSearchBtnClick = () => {
   if (throttleTimer) window.clearTimeout(throttleTimer)
   if (props.componentSetting.rememberHistory) {
@@ -439,6 +515,7 @@ const engineSelector = ref()
 function clickEngineWrapperOutside(e: MouseEvent) {
   if (showEngine.value && !engineSelector.value.contains(e.target)) {
     showEngine.value = false
+    showAddPanel.value = false
   }
 }
 
@@ -566,6 +643,41 @@ const textColor = computed(() => props.componentSetting.textColor || '#464650')
       }
       &:hover {
         background: rgba(207,191,219,.2);
+      }
+    }
+    .add-engine-btn {
+      border: 1px dashed #c8c8cc;
+      border-radius: 50%;
+      padding: 2px;
+      width: 28px;
+      height: 28px;
+      min-width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      .add-icon {
+        font-size: 18px;
+        line-height: 1;
+        color: #999;
+      }
+      &:hover {
+        border-color: $color-primary;
+        .add-icon {
+          color: $color-primary;
+        }
+      }
+    }
+  }
+  .add-panel {
+    top: calc(3rem + 5px);
+    .engine-list-item {
+      border: 1px dashed #ccc;
+      border-radius: 3px;
+      margin: 2px;
+      &:hover {
+        border-color: $color-primary;
       }
     }
   }

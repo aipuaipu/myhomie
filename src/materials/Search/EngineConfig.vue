@@ -26,7 +26,7 @@
           <template #item="{ element }">
             <div
               class="engine-list-item"
-              :title="element.iconType !== 'local' ? $t('双击重新编辑') : ''"
+              :title="$t('双击重新编辑')"
               @dblclick="handleEditEngine(element)"
             >
               <img
@@ -91,6 +91,38 @@
         </Draggable>
         <div v-if="showDeleteArea" class="delete-area">
           {{ $t('拖拽至此处删除') }}
+        </div>
+      </div>
+      <div v-if="unselectedPresets.length > 0" class="label-text s-title" style="margin-top: 8px">
+        {{ $t('可选预设引擎') }}
+      </div>
+      <div v-if="unselectedPresets.length > 0" class="preset-engine-wrapper engine-list">
+        <div
+          v-for="item in unselectedPresets"
+          :key="item.name"
+          class="engine-list-item preset-engine-item"
+          @click="handleQuickAddPreset(item)"
+        >
+          <img
+            v-if="item.iconType === 'local' || item.iconType === 'network'"
+            :src="item.iconPath"
+            alt="icon"
+            width="24"
+            height="24"
+          >
+          <img
+            v-if="item.iconType === 'api'"
+            :src="getTargetIcon(item.link)"
+            alt="icon"
+            width="24"
+            height="24"
+          >
+          <div v-if="item.iconType === 'text'" class="no-icon">
+            {{ item.name.slice(0, 1) }}
+          </div>
+          <div class="text">
+            {{ item.name }}
+          </div>
         </div>
       </div>
     </div>
@@ -188,6 +220,9 @@ import IconifyPicker from '@/components/Tools/IconifyPicker.vue'
 import { uid } from '@/utils'
 import { useI18n } from 'vue-i18n'
 import request from '@/utils/request'
+import { PRESET_ENGINES, unusedPresetEngines, isSameEngine } from './engines'
+import type { SearchEngine } from './engines'
+
 const iconTypeList = [
   {
     label: 'API获取',
@@ -236,12 +271,13 @@ export default defineComponent({
       cloneBackupEngineList.value = JSON.parse(JSON.stringify(props.backupEngineList))
     })
 
+    const unselectedPresets = computed(() => {
+      return unusedPresetEngines(cloneEngineList.value, cloneBackupEngineList.value)
+    })
+
     const handleDragChoose = (e: any) => {
       const { oldIndex } = e
-      const { iconType } = cloneEngineList.value[oldIndex]
-      if (iconType !== 'local') {
-        showDeleteArea.value = true
-      }
+      showDeleteArea.value = true
     }
     const handleDragUnchoose = async () => {
       await nextTick()
@@ -258,11 +294,17 @@ export default defineComponent({
         pointEl = document.elementFromPoint(clientX, clientY)
       }
       if (pointEl?.className === 'delete-area') {
-        if (window.confirm(t('是否删除该自定义引擎'))) {
-          const { newIndex } = e
-          cloneEngineList.value.splice(newIndex, 1)
-        }
+        const { newIndex } = e
+        cloneEngineList.value.splice(newIndex, 1)
       }
+      emit('update', {
+        engineList: cloneEngineList.value,
+        backupEngineList: cloneBackupEngineList.value
+      })
+    }
+
+    const handleQuickAddPreset = (preset: SearchEngine) => {
+      cloneEngineList.value.push({ ...preset })
       emit('update', {
         engineList: cloneEngineList.value,
         backupEngineList: cloneBackupEngineList.value
@@ -338,19 +380,16 @@ export default defineComponent({
             }
           }
           if (state.formData._id) {
-            // 编辑
             const index = cloneEngineList.value.findIndex((item) => item._id === state.formData._id)
             if (~index) {
               cloneEngineList.value[index] = { ...toRaw(state.formData) }
             } else {
-              // 现在允许编辑local引擎，根据Name查找
               const nameIndex = cloneEngineList.value.findIndex((item) => item.name === state.formData.name)
               if (~nameIndex) {
                 cloneEngineList.value[nameIndex] = { ...toRaw(state.formData) }
               }
             }
           } else {
-            // 添加
             state.formData._id = uid()
             cloneEngineList.value.push({ ...toRaw(state.formData) })
           }
@@ -371,11 +410,7 @@ export default defineComponent({
 
     const handleEditEngine = (item: any) => {
       const { _id, name, link, iconType, iconPath } = item
-      if (iconType === 'local') {
-        state.formData = { _id: uid(), name, link, iconType: 'network', iconPath }
-      } else {
-        state.formData = { _id, name, link, iconType, iconPath }
-      }
+      state.formData = { _id: _id || uid(), name, link, iconType, iconPath }
       engineDialogVisible.value = true
     }
 
@@ -399,6 +434,8 @@ export default defineComponent({
       handleDragEnd,
       handleAddNewEngine,
       handleEditEngine,
+      handleQuickAddPreset,
+      unselectedPresets,
       iconTypeList,
       state,
       form,
@@ -497,6 +534,18 @@ export default defineComponent({
       background: rgba(0,0,0,0.04);
     }
   }
+}
+.preset-engine-item {
+  border: 1px dashed #ccc;
+  border-radius: 3px;
+  transition: border-color 0.2s;
+  &:hover {
+    border-color: $color-primary;
+    background: rgba(0, 150, 255, 0.04);
+  }
+}
+.preset-engine-wrapper {
+  margin: 0 5px;
 }
 .backup-engine-wrapper {
   position: relative;
