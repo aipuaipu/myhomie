@@ -85,7 +85,8 @@ export default defineComponent({
 
     return {
       num,
-      positionCSS
+      positionCSS,
+      clampDisplayFontSize
     }
   }
 })

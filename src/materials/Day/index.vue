@@ -124,7 +124,8 @@ export default defineComponent({
       day,
       positionCSS,
       ttsText1,
-      ttsText2
+      ttsText2,
+      clampDisplayFontSize
     }
   }
 })

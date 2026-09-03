@@ -121,7 +121,8 @@ export default defineComponent({
       positionCSS,
       verseElement,
       handleClickAction,
-      contextmenu
+      contextmenu,
+      clampDisplayFontSize
     }
   }
 })

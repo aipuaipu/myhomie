@@ -63,7 +63,8 @@ export default defineComponent({
     return {
       now,
       positionCSS,
-      textHollowStyle
+      textHollowStyle,
+      clampDisplayFontSize
     }
   }
 })

@@ -200,7 +200,8 @@ export default defineComponent({
       cityName,
       weatherIcon,
       weatherText,
-      temperature
+      temperature,
+      clampDisplayFontSize
     }
   }
 })
