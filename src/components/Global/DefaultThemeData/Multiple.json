@@ -46,15 +46,140 @@
       "i": "m0f6mlv2hio",
       "componentSetting": {
         "userSettingKeyMap": {
+          "Q": {
+            "url": "https://chatgpt.com",
+            "remark": "ChatGPT",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=chatgpt.com"
+          },
+          "W": {
+            "url": "https://chat.deepseek.com",
+            "remark": "DeepSeek",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=chat.deepseek.com"
+          },
+          "E": {
+            "url": "https://www.doubao.com",
+            "remark": "豆包",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.doubao.com"
+          },
+          "R": {
+            "url": "https://gemini.google.com",
+            "remark": "Gemini",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=gemini.google.com"
+          },
+          "T": {
+            "url": "https://claude.ai",
+            "remark": "Claude",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=claude.ai"
+          },
+          "Y": {
+            "url": "https://www.kimi.com",
+            "remark": "Kimi",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.kimi.com"
+          },
+          "U": {
+            "url": "https://yuanbao.tencent.com",
+            "remark": "元宝",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=yuanbao.tencent.com"
+          },
+          "I": {
+            "url": "https://www.qianwen.com",
+            "remark": "千问",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.qianwen.com"
+          },
+          "O": {
+            "url": "https://grok.com",
+            "remark": "Grok",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=grok.com"
+          },
+          "P": {
+            "url": "https://chatglm.cn",
+            "remark": "智谱",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=chatglm.cn"
+          },
+          "A": {
+            "url": "https://jimeng.jianying.com",
+            "remark": "即梦",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=jimeng.jianying.com"
+          },
+          "S": {
+            "url": "https://www.midjourney.com",
+            "remark": "Midjourney",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.midjourney.com"
+          },
+          "D": {
+            "url": "https://tongyi.aliyun.com/wan/",
+            "remark": "万相",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=tongyi.aliyun.com"
+          },
+          "F": {
+            "url": "https://ideogram.ai",
+            "remark": "Ideogram",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=ideogram.ai"
+          },
           "G": {
-            "url": "https://github.com",
-            "remark": "Github",
-            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAABQ5JREFUWEetl11sU2UYx//POV23sq18jHN61nY4xoQ4EjAqEC+UmZgI8TN6YaIRMV44MGpiYtAYZYgYNcavIBIuMH7EG2JiiIqJJMwYNAN3IcYNtcIYpT09ZYN0KzK69m9O6Zbu9HTtZOeiF32fj9/zvM/zvs8rqPLr6OjwXjh//g4C94HsABCkSNBWFzIGIAaRfgEOLly8+Eh/f/+VakxLJaFWTTMui2wn+QgAfyX5wnpKRL6sI3cMJpPmTDplAdrb22vHUqmXATxPsr5Kx9PERCQN4N0Gv39XJBIZd7PhClCI+muS6/6PY6eOiPTWkQ+4ZaMEIKzrqybIbwmE58L5pA0Boh6Ru6OWdaLY7jSAfOTA8bl2XgxRB6wpzsQUQGHPfyxOuwADAE5A5E6STbPMyEUBfgCwjMBNUxAivQ1+//rJmpgCMHT9NZKvFDtRRJ6KW9a+zs5Oz8DAwCaQu0AaEBkDcFrICwBIkYUgrwMwX0RGQG5fpGn77FZs1vUHc+RX09IustO0rFfzLWz/FIou4qx2UdW1pmken1Tu0LSGEVVd0tXVdbK7uztXbJSkhMPh61VVTQ4NDdlg+S8QCCxFLnfKAZCuI9vtrcgDGLr+MckuZ4oVj+eWeDzeN8vUTxMPBoNLspnMGZfO2Gta1haxT7jhZDLpdsgoIpvilvX5tQAYhrGR2ex3LjZSTZqmSbOu35Ujv3chTIuqrozH4yX0swEKhUJN2UzmJMnFJRkW2SCGrn9EcqsLwDbTst6ejbNysoamPUFgv4uPPWJo2hECnc7Fmtra5dFo9O+5AGhtbV3wbzo9VZhF50KPDfAngeXOKo0nEo0iwrkAKBT6GZJLpvkB/pKAro+CbHAAnDYtq22unOcBNO0YgTXTbIqM2TWQJjnP4Ww0kUxWe/VWxWno+imSSx2BXrIBSlKTF1KUQCKRsKqyXkGotbW17vKlSxdJ1joAztgAvSTXurTIY3HL+mIuAGZo9V5p1rQPcsCzJS0CHI9b1rq5KERD1w+R3FASJPChfRCVXBZTbSLygmlZ71xLFgxN20zgEzcbishDsmLFisaLIyPnADS6CFFEXg+1tOzs6+vLzAaku7tb2btnjz3OvQlAddEdbQKCk5fRbpJP54VE3lNFfs2S20Cuyv8FnIXIfgU4qni9fdFodMQNpq2tbX46nb5ZAW7NkZtBtpeDFkXZbSYSz+QBwprWPiHyB0mvABcUkYcXkL8Mi/wE8kZH7x7dsnXr7c7ruNDrrqdqSX2JjNcAK89a1j/FA8kOkvkhAUDK4/WuFBHfxJUrPxdfJKqi3B9LJA66RWYYRiez2SOVtkpEdpiW1V3I7lVxeyQbTaWOFaV9v5lMPlkYVh4l2aKI9Nf7/Z+WG7HD4fCizPj48IwAIica/f61JSOZrRQMBluymUwvgGYAWVHVe03TPFQpouL1gKbZxeopoxNXa2rWxWKxs1Od5hQM6frqCdJ2ehVC5DCAwwKMEgjctn79rgMHDmTLQQU0baJM1cc9IhvPWdZvxbquD5NQKBSeyGS+Abna6ahJ02pnevcFNM2GUxyF+7vq8dwTi8WGSgqyXCSFMf0lAC8Wn+G++nrf4ODg5RkyYA+r+cBExH6gvlU3b94b5XQqPk5bdH1ZRuQ55nKPQ0S5oaNjYU9Pj51m18/Q9WECdjt/5vF636801FQEmPRij+RjPl9N8cjtRmBvn8/nS0UikVQ1xfsf2SAgrsH3JlQAAAAASUVORK5CYII="
+            "url": "https://leonardo.ai",
+            "remark": "Leonardo",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=leonardo.ai"
+          },
+          "H": {
+            "url": "https://www.recraft.ai",
+            "remark": "Recraft",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.recraft.ai"
           },
           "J": {
-            "url": "https://juejin.cn",
-            "remark": "掘金",
-            "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAA4tJREFUWEftlk9oFVcUxn9n+kxLjLWEECJEKUWkqJQugqtSCroQkSLhGSSEIlEsSAi2pmm0yZvMS+qfmLoIwYVEKRJKSIO4COJKRLoKWRX6FhJcqEgRKSJRNCZzZK7XZJK8eZmZCN14lvfP+b453znfHVFV4X8MeU8gbQWklTIqGTTq/UeLDjCTRslUEshxalnHGLDDgCqTzFGvvTxISiIxAfvlfwNbloBNUeALHeVFEhKJCQTJpZ3NlHMV2G7BCqYCPdxJAm5ype6BQ1SwkcuAw30O6iWmk4KvikAasGJ3SlZActTh0Mk0rdrPvSSg0skmMgzik9c8k1F3IwnIL+xhjen0j4DHKAfU42YcEuKyCxhBqAReoGTV43qiCshPlLPWaNxgR80HOtSjvxQJcWkHTiE49twIzzis53ieiMDbw+LyI9AXSjjGfZqXNp38TAUf8jsO9fbuLHN0aA/nSxKOMwXi8g0wilBVbOykiy04XEP43O4/wqdB89xeSTLTA+LSiE9NKbbSSS2ZkPvBU5TvzBjCFYQKK9UE02T1t2hXlC7acPhXPYYFV8+C0S2IUZ7RHKnXgv8ftmBvbi086BeZoFWvF38XZME7shavX8jpToQRsOVVCvjs0x6mIkfHJSAwiFBmiQQP0VH1TNMWDSPTB8Y9t9o7j4MGfyNBG5uoMOWts5tPgSb1GI9MGHiEcBXBxydbctZdvkW4Anxs888/XvM+YB+ZC0DzfHmFXrbRrfsJRnBZyEmqAgPWAYKvWb7/Jw7/kEc5GZJpKPx8LzMicTmCMAC2vD43eEWjnubJSh0d3pcWKqliGNgdkqlFPYYWnSs2hpJjB46RpNYevotPveYJnuEVQ07wJWVGnk8t+APjhnkmll6OtuJjVLPezP7X9tJzlCPq8UcpBuLSBFxEjIWDzy1madBTETKVMiKpI8Ne+oBjIdABxmnTSWYXlfJ7MmwwrtcSWj9PgXYdLd5DwblY/wPicgAYQii3Jf2LWbL6K49Mkh+oMdWCr+x+4PvN6pm1khGLgAHJsR3HzPFmm/FhMH7GCYUxhBoLPoWyT/MUVgKPXYG3ieQon1Bt5nmvXZtBDYGM1XucGZr0DIGPxIrYFVikt0sO6A7Nto/SrR69sVBDh1IRMKVz2YMwjJpsjepxIyl4YgmWAkgXn/EStI+7acBXTSAt6CI54/yQvAugqBype+BdkXoNCntru+TiLscAAAAASUVORK5CYII="
+            "url": "https://www.krea.ai",
+            "remark": "Krea",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.krea.ai"
+          },
+          "K": {
+            "url": "https://firefly.adobe.com",
+            "remark": "Firefly",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=firefly.adobe.com"
+          },
+          "L": {
+            "url": "https://www.liblib.art",
+            "remark": "Liblib",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.liblib.art"
+          },
+          "Z": {
+            "url": "https://kling.ai/cn",
+            "remark": "可灵",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=kling.ai"
+          },
+          "X": {
+            "url": "https://runwayml.com",
+            "remark": "Runway",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=runwayml.com"
+          },
+          "C": {
+            "url": "https://hailuoai.com",
+            "remark": "海螺",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=hailuoai.com"
+          },
+          "V": {
+            "url": "https://suno.com",
+            "remark": "Suno",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=suno.com"
+          },
+          "B": {
+            "url": "https://www.perplexity.ai",
+            "remark": "Perplexity",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=www.perplexity.ai"
+          },
+          "N": {
+            "url": "https://notebooklm.google.com",
+            "remark": "NotebookLM",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=notebooklm.google.com"
+          },
+          "M": {
+            "url": "https://copilot.microsoft.com",
+            "remark": "Copilot",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=copilot.microsoft.com"
+          },
+          "=": {
+            "url": "https://elevenlabs.io",
+            "remark": "ElevenLabs",
+            "icon": "https://kongfandong.cn/api/icon/v2?url=elevenlabs.io"
           }
         },
         "position": 5,
