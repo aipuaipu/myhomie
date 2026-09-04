@@ -216,7 +216,7 @@ import { useStore } from '@/store'
 import { mapPosition } from '@/plugins/position-selector'
 import { getTargetIcon } from '@/utils/images'
 import request from '@/utils/request'
-import { unusedPresetEngines, applyAddEngine } from './engines'
+import { selectableEnginesToAdd, applyAddEngine } from './engines'
 import type { SearchEngine } from './engines'
 const props = defineProps({
   componentSetting: {
@@ -260,7 +260,7 @@ const handleChangeEngine = (index: number) => {
 }
 
 const availableAddEngines = computed(() => {
-  return unusedPresetEngines(
+  return selectableEnginesToAdd(
     props.componentSetting.engineList || [],
     props.componentSetting.backupEngineList || []
   )
@@ -651,8 +651,8 @@ const textColor = computed(() => props.componentSetting.textColor || '#464650')
       }
     }
     .add-engine-btn {
-      border: 1px dashed #c8c8cc;
-      border-radius: 50%;
+      border: 1px solid #d8d8dc;
+      border-radius: 3px;
       padding: 2px;
       width: 28px;
       height: 28px;
@@ -663,12 +663,13 @@ const textColor = computed(() => props.componentSetting.textColor || '#464650')
       cursor: pointer;
       transition: all 0.2s;
       .add-icon {
-        font-size: 18px;
+        font-size: 16px;
         line-height: 1;
         color: #999;
       }
       &:hover {
         border-color: $color-primary;
+        background: rgba($color-primary, 0.06);
         .add-icon {
           color: $color-primary;
         }
