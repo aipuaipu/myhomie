@@ -16,6 +16,8 @@ const legacyKeyMaps = [
   }
 ]
 
+const multipleAffixMarkers = ['掘金', '微博', 'Github Trending']
+
 const normalizeUrl = (url = '') => url.replace(/\/+$/, '').toLowerCase()
 
 const isLegacyKeyMap = (keyMap: Record<string, KeySetting>) => {
@@ -52,4 +54,26 @@ export const migrateLegacyKeyboardMap = <T extends Record<string, any>>(
   })
 
   return { components: migratedComponents, changed }
+}
+
+export const restoreMissingMultipleList = <T extends Record<string, any>>(
+  list: T[],
+  affix: T[],
+  defaultList: T[]
+) => {
+  if (list.length || !defaultList.length) return { list, changed: false }
+
+  const markerSet = new Set(
+    affix
+      .filter(component => component.material === 'Empty')
+      .map(component => component.componentSetting?.customText)
+  )
+  if (!multipleAffixMarkers.every(marker => markerSet.has(marker))) {
+    return { list, changed: false }
+  }
+
+  return {
+    list: JSON.parse(JSON.stringify(defaultList)) as T[],
+    changed: true
+  }
 }
