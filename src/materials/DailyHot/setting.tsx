@@ -4,7 +4,6 @@ export default {
   formData: {
     enableList: ['weibo', 'zhihu', 'sspai', 'bilibili'],
     limit: 10,
-    apiKey: 'uapi-aucaiixs31YDT02g6c0TV0gtFyhpADae7ZqPeA5f',
     position: 5,
     textFontSize: 12,
     textColor: '#d8d8d8',
@@ -38,14 +37,6 @@ export default {
           max: 20,
           style: 'width: 100px'
         },
-      },
-      apiKey: {
-        label: 'API Key',
-        type: 'input',
-        attrs: {
-          placeholder: '留空则使用默认 Key',
-          style: 'width: 100%'
-        }
       },
       ...pick(formData, [
         'position',

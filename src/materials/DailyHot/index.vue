@@ -109,19 +109,17 @@ const onSwitchClassify = (item: Classify) => {
 const listLoading = ref(false)
 const listError = ref(false)
 const list = ref<ListItem[]>([])
-const UAPIS_BASE = 'https://uapis.cn/api/v1/hotboard'
-const DEFAULT_API_KEY = 'uapi-aucaiixs31YDT02g6c0TV0gtFyhpADae7ZqPeA5f'
+const API_BASE = 'https://api-hot.imsyy.top'
 const getList = async (retry = false) => {
   listLoading.value = true
   listError.value = false
   list.value = []
   try {
     let _classify = activeClassify.value
-    const url = `${UAPIS_BASE}/${activeClassify.value}`
-    const apiKey = props.componentSetting.apiKey || DEFAULT_API_KEY
-    const res = await request({ url, timeout: retry ? 5000 : 10000, headers: { 'X-API-Key': apiKey } })
+    const url = retry ? `${API_BASE}/${activeClassify.value}` : `${API_BASE}/${activeClassify.value}`
+    const res = await request({ url, timeout: retry ? 5000 : 10000 })
     if (_classify === activeClassify.value) {
-      const items = res.list || []
+      const items = res.data || []
       list.value = items.slice(0, props.componentSetting.limit).map((item: any) => ({
         title: item.title,
         url: item.url

@@ -77,23 +77,18 @@ const getList = async () => {
     error.value = false
     const limit = props.componentSetting.limit || 10
     const data = await request({
-      url: `https://aihot.virxact.com/api/v1/hot-topics`,
-      headers: {
-        'User-Agent': 'aihot-api/1.0 aihot-actor/howdz-dashboard'
-      },
-      params: {
-        limit: String(limit)
-      }
+      url: `https://api-hot.imsyy.top/ithome`,
+      timeout: 10000
     })
-    if (data && data.items) {
-      list.value = data.items.slice(0, limit).map((item: any) => {
+    if (data && data.data) {
+      list.value = data.data.slice(0, limit).map((item: any, index: number) => {
         return {
-          id: item.id,
-          rank: item.rank,
+          id: item.title,
+          rank: index + 1,
           title: item.title,
-          source: item.source?.name || '',
-          link: item.links?.original || item.links?.aihot || '#',
-          count: item.signalCount || item.sourceCount || 0
+          source: '',
+          link: item.url || '#',
+          count: 0
         }
       })
     } else {
